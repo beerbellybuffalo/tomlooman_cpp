@@ -20,11 +20,14 @@ public:
 	AMyCharacter();
 
 protected:
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AActor>ProjectileClass;
 	UPROPERTY(VisibleAnywhere)
 	USpringArmComponent* SpringArmComp;
 	UPROPERTY(VisibleAnywhere)
 	UCameraComponent* CameraComp;
-	UPROPERTY(VisibleAnywhere);
+	UPROPERTY(VisibleAnywhere)
 	UArrowComponent* ArrowComp;
 	
 	// Called when the game starts or when spawned
@@ -32,6 +35,7 @@ protected:
 
 	void MoveForward(float Value);
 	void MoveSideways(float Value);
+	void PrimaryAttack();
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
