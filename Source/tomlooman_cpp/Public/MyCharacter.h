@@ -29,6 +29,10 @@ protected:
 	UCameraComponent* CameraComp;
 	UPROPERTY(VisibleAnywhere)
 	UArrowComponent* ArrowComp;
+	UPROPERTY(VisibleAnywhere)
+	UCharacterMovementComponent* MyCharacterMovement;
+	UPROPERTY(EditAnywhere)
+	float JumpMultiplier;
 	
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -36,6 +40,8 @@ protected:
 	void MoveForward(float Value);
 	void MoveSideways(float Value);
 	void PrimaryAttack();
+	void Jump();
+	
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

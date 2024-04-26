@@ -43,9 +43,12 @@ AMyCharacter::AMyCharacter()
 	CameraComp = CreateDefaultSubobject<UCameraComponent>("CameraComp");
 	CameraComp -> SetupAttachment(SpringArmComp); //we defined this pointer to USpringArmComp inside the header
 
-	GetCharacterMovement() -> bOrientRotationToMovement = true;
+	MyCharacterMovement = GetCharacterMovement();
+	MyCharacterMovement -> bOrientRotationToMovement = true;
 	
 	bUseControllerRotationYaw = false; // we do this if we want the character to be able to face the player 
+
+	JumpMultiplier = 500;
 }
 
 // Called when the game starts or when spawned
@@ -71,6 +74,7 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	PlayerInputComponent->BindAxis("Turn",this,&APawn::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("LookUp",this,&APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAction("PrimaryAttack", IE_Pressed, this, &AMyCharacter::PrimaryAttack);
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AMyCharacter::Jump);
 }
 
 void AMyCharacter::MoveForward(float Value)
@@ -103,4 +107,14 @@ void AMyCharacter::PrimaryAttack()
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
+}
+
+void AMyCharacter::Jump()
+{
+	if(!MyCharacterMovement->IsFalling())
+	{
+		LaunchCharacter(GetActorUpVector()*JumpMultiplier,false,false);
+
+		// MyCharacterMovement->AddImpulse(GetActorUpVector()*1000);
+	}
 }
