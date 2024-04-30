@@ -20,11 +20,12 @@ AExplosiveBarrel::AExplosiveBarrel()
 	CapsuleComp = CreateDefaultSubobject<UCapsuleComponent>("CapsuleComp");
 	RootComponent = CapsuleComp;
 	CapsuleComp->SetGenerateOverlapEvents(true);
-	
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>("MeshComp");
 	MeshComp->SetupAttachment(RootComponent);
 	EffectComp = CreateDefaultSubobject<UParticleSystemComponent>("EffectComp");
 	EffectComp->SetupAttachment(RootComponent);
+
+	ExplosionRadius = 500; //set some default value but can change in editor
 }
 
 // Called when the game starts or when spawned
@@ -40,9 +41,52 @@ void AExplosiveBarrel::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
+void AExplosiveBarrel::ApplyExplosionForceInRadius(FVector StartLocation, FVector EndLocation, float Radius)
+{
+	// Out parameters for hit results
+	TArray<FHitResult> OutHits;
+
+	// Trace parameters
+	FCollisionQueryParams TraceParams(FName(TEXT("MultiSphereTrace")), false, this);
+	UE_LOG(LogTemp, Warning, TEXT("Trace parameters successful"));
+	
+	// Perform the multi-sphere trace
+	bool bHit = UKismetSystemLibrary::SphereTraceMulti(GetWorld(), StartLocation, EndLocation, Radius,
+													   UEngineTypes::ConvertToTraceType(ECC_Pawn),
+													   false, TArray<AActor*>(), EDrawDebugTrace::ForOneFrame, OutHits, true);
+	UE_LOG(LogTemp, Warning, TEXT("Multi-sphere trace successful"));
+
+	// Check if the trace hit anything
+	if (bHit)
+	{
+		// Loop through each hit result
+		for (const FHitResult &Hit : OutHits)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Entered For Loop"));
+			
+			// Access the hit actor and other relevant information
+			AActor* HitActor = Hit.GetActor();
+			USceneComponent* RootComp = HitActor->GetRootComponent();
+			FVector HitLocation = Hit.ImpactPoint;
+			FVector ImpulseDirection = HitLocation-StartLocation;
+			ImpulseDirection.Normalize();
+			
+			//this multiplier is inversely proportional to the distance from the origin of explosion
+			float forceMultiplierByDist = ExplosionRadius/(HitLocation-StartLocation).Size();
+			// Apply Impulse on HitActor towards ImpulseDirection, using forceMultiplierByDist
+			// // If the actor has a root component, apply impulse
+			if (RootComp)
+			{
+				UPrimitiveComponent* RootPrimComp = Cast<UPrimitiveComponent>(RootComp);
+				RootPrimComp->AddImpulse(forceMultiplierByDist*ImpulseDirection);
+			}
+		}
+	}
+}
+
 void AExplosiveBarrel::Explode()
 {
-	// get the effect that's assigned via editor
+	// get the effect that's assigned via editor and spawn it
 	UParticleSystem* ExplosionEffect = EffectComp->Template;
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionEffect, GetActorLocation());
 }
@@ -50,18 +94,25 @@ void AExplosiveBarrel::Explode()
 //Method 1: Using Overlap to trigger barrel explosion
 void AExplosiveBarrel::OnOverlapBegin(class AActor* OverlappedActor, class AActor* OtherActor)
 {
-
 	UE_LOG(LogTemp, Warning, TEXT("Barrel Hit, Overlap Detected"));
 	// Check if the other actor in collision is of the class AMagicProjectile
 	if(OtherActor->IsA(AMagicProjectile::StaticClass()))
 	{
-		//Destroy both the barrel and the projectile
-		OverlappedActor->Destroy();
 		OtherActor->Destroy();
+		UE_LOG(LogTemp, Warning, TEXT("Projectile Destroyed"));
+		FVector ExplosionLocation = OverlappedActor->GetActorLocation();
 		//trigger explosion effect
 		Explode();
+		UE_LOG(LogTemp, Warning, TEXT("Explode() finished execution"));
+		
+		// apply explosion force to surrounding objects within a certain radius
+		ApplyExplosionForceInRadius(ExplosionLocation, ExplosionLocation, ExplosionRadius);
+		UE_LOG(LogTemp, Warning, TEXT("ApplyExplosionForceInRadius() finished execution"));
+
+		//Destroy both the barrel and the projectile
+		OverlappedActor->Destroy();
+		UE_LOG(LogTemp, Warning, TEXT("Barrel Destroyed"));
 	}
-	
 }
 
 

@@ -31,6 +31,9 @@ protected:
 	UArrowComponent* ArrowComp;
 	UPROPERTY(VisibleAnywhere)
 	UCharacterMovementComponent* MyCharacterMovement;
+	UPROPERTY(VisibleAnywhere)
+	USceneComponent* RootComp;
+		
 	UPROPERTY(EditAnywhere)
 	float JumpMultiplier;
 	

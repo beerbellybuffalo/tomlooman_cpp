@@ -49,6 +49,9 @@ AMyCharacter::AMyCharacter()
 	bUseControllerRotationYaw = false; // we do this if we want the character to be able to face the player 
 
 	JumpMultiplier = 500;
+
+	RootComp = GetRootComponent();
+	Cast<UPrimitiveComponent>(RootComp)->SetSimulatePhysics(true);
 }
 
 // Called when the game starts or when spawned

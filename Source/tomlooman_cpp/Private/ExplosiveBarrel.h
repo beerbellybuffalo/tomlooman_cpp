@@ -24,6 +24,8 @@ protected:
 	UStaticMeshComponent *MeshComp;
 	UPROPERTY(VisibleAnywhere)
 	UParticleSystemComponent *EffectComp;
+	UPROPERTY(EditAnywhere)
+	float ExplosionRadius;
 
 	// void Explode(UParticleSystem* ExplosionEffect, FHitResult Hit);
 	void Explode();
@@ -40,4 +42,6 @@ protected:
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	void ApplyExplosionForceInRadius(FVector StartLocation, FVector EndLocation, float Radius);
 };
