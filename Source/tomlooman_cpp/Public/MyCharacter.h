@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "MyInteractionComponent.h"
 #include "GameFramework/Character.h"
 #include "MyCharacter.generated.h"
 // #include "GameFramework/SpringArmComponent.h"
@@ -33,6 +34,8 @@ protected:
 	UCharacterMovementComponent* MyCharacterMovement;
 	UPROPERTY(VisibleAnywhere)
 	USceneComponent* RootComp;
+	UPROPERTY(VisibleAnywhere)
+	UMyInteractionComponent* InteractionComp;
 		
 	UPROPERTY(EditAnywhere)
 	float JumpMultiplier;
@@ -43,6 +46,7 @@ protected:
 	void MoveForward(float Value);
 	void MoveSideways(float Value);
 	void PrimaryAttack();
+	void PrimaryInteract();
 	void Jump();
 	
 public:	

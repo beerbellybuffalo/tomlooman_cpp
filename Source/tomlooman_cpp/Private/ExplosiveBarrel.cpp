@@ -27,7 +27,7 @@ AExplosiveBarrel::AExplosiveBarrel()
 	EffectComp = CreateDefaultSubobject<UParticleSystemComponent>("EffectComp");
 	EffectComp->SetupAttachment(RootComponent);
 	ExplosionRadius = 500; //set some default value but can change in editor
-	ExplosionMagnitude = 200;
+	ExplosionMagnitude = 200000;
 }
 
 // Called when the game starts or when spawned

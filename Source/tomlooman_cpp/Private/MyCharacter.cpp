@@ -2,7 +2,7 @@
 
 
 #include "MyCharacter.h"
-
+#include "MyInteractionComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "DrawDebugHelpers.h"
@@ -52,6 +52,8 @@ AMyCharacter::AMyCharacter()
 
 	RootComp = GetRootComponent();
 	Cast<UPrimitiveComponent>(RootComp)->SetSimulatePhysics(true);
+
+	InteractionComp = CreateDefaultSubobject<UMyInteractionComponent>("InteractionComp");
 }
 
 // Called when the game starts or when spawned
@@ -77,6 +79,7 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	PlayerInputComponent->BindAxis("Turn",this,&APawn::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("LookUp",this,&APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAction("PrimaryAttack", IE_Pressed, this, &AMyCharacter::PrimaryAttack);
+	PlayerInputComponent->BindAction("PrimaryInteract", IE_Pressed, this, &AMyCharacter::PrimaryInteract);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AMyCharacter::Jump);
 }
 
@@ -110,6 +113,11 @@ void AMyCharacter::PrimaryAttack()
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
+}
+
+void AMyCharacter::PrimaryInteract()
+{
+	InteractionComp->PrimaryInteract();
 }
 
 void AMyCharacter::Jump()
