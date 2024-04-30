@@ -2,7 +2,9 @@
 
 
 #include "ExplosiveBarrel.h"
-
+#include "Kismet/KismetSystemLibrary.h"
+#include "CollisionQueryParams.h"
+#include "LandscapeStreamingProxy.h"
 #include "MagicProjectile.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
@@ -24,7 +26,6 @@ AExplosiveBarrel::AExplosiveBarrel()
 	MeshComp->SetupAttachment(RootComponent);
 	EffectComp = CreateDefaultSubobject<UParticleSystemComponent>("EffectComp");
 	EffectComp->SetupAttachment(RootComponent);
-
 	ExplosionRadius = 500; //set some default value but can change in editor
 }
 
@@ -32,7 +33,8 @@ AExplosiveBarrel::AExplosiveBarrel()
 void AExplosiveBarrel::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	// when spawned, set all objects of the class ALandscapeProxy to be ignored.
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ALandscapeStreamingProxy::StaticClass(), ActorsToIgnore);
 }
 
 // Called every frame
@@ -43,6 +45,9 @@ void AExplosiveBarrel::Tick(float DeltaTime)
 
 void AExplosiveBarrel::ApplyExplosionForceInRadius(FVector StartLocation, FVector EndLocation, float Radius)
 {
+	// // Ignore WorldStatic objects for all traces
+	// ETraceTypeQuery TraceTypeQuery = UEngineTypes::ConvertToTraceType(ECC_WorldDynamic);
+
 	// Out parameters for hit results
 	TArray<FHitResult> OutHits;
 
@@ -51,9 +56,17 @@ void AExplosiveBarrel::ApplyExplosionForceInRadius(FVector StartLocation, FVecto
 	UE_LOG(LogTemp, Warning, TEXT("Trace parameters successful"));
 	
 	// Perform the multi-sphere trace
-	bool bHit = UKismetSystemLibrary::SphereTraceMulti(GetWorld(), StartLocation, EndLocation, Radius,
-													   UEngineTypes::ConvertToTraceType(ECC_Pawn),
-													   false, TArray<AActor*>(), EDrawDebugTrace::ForOneFrame, OutHits, true);
+	bool bHit = UKismetSystemLibrary::SphereTraceMulti(
+		GetWorld(),
+		StartLocation,
+		EndLocation,
+		Radius,
+		UEngineTypes::ConvertToTraceType(ECC_WorldDynamic),
+		false,
+		ActorsToIgnore,
+		EDrawDebugTrace::ForDuration,
+		OutHits,
+		true);
 	UE_LOG(LogTemp, Warning, TEXT("Multi-sphere trace successful"));
 
 	// Check if the trace hit anything
@@ -66,6 +79,8 @@ void AExplosiveBarrel::ApplyExplosionForceInRadius(FVector StartLocation, FVecto
 			
 			// Access the hit actor and other relevant information
 			AActor* HitActor = Hit.GetActor();
+			FString ActorName = HitActor->GetName();
+			UE_LOG(LogTemp, Warning, TEXT("Actor hit: %s"), *ActorName);
 			USceneComponent* RootComp = HitActor->GetRootComponent();
 			FVector HitLocation = Hit.ImpactPoint;
 			FVector ImpulseDirection = HitLocation-StartLocation;
@@ -79,6 +94,7 @@ void AExplosiveBarrel::ApplyExplosionForceInRadius(FVector StartLocation, FVecto
 			{
 				UPrimitiveComponent* RootPrimComp = Cast<UPrimitiveComponent>(RootComp);
 				RootPrimComp->AddImpulse(forceMultiplierByDist*ImpulseDirection);
+				UE_LOG(LogTemp, Warning, TEXT("Impulse Added Successfully"));
 			}
 		}
 	}

@@ -26,7 +26,9 @@ protected:
 	UParticleSystemComponent *EffectComp;
 	UPROPERTY(EditAnywhere)
 	float ExplosionRadius;
-
+	UPROPERTY(VisibleAnywhere)
+	TArray<AActor*> ActorsToIgnore;
+	
 	// void Explode(UParticleSystem* ExplosionEffect, FHitResult Hit);
 	void Explode();
 
