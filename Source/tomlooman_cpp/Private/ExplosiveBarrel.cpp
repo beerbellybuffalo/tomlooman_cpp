@@ -27,6 +27,7 @@ AExplosiveBarrel::AExplosiveBarrel()
 	EffectComp = CreateDefaultSubobject<UParticleSystemComponent>("EffectComp");
 	EffectComp->SetupAttachment(RootComponent);
 	ExplosionRadius = 500; //set some default value but can change in editor
+	ExplosionMagnitude = 200;
 }
 
 // Called when the game starts or when spawned
@@ -93,7 +94,7 @@ void AExplosiveBarrel::ApplyExplosionForceInRadius(FVector StartLocation, FVecto
 			if (RootComp)
 			{
 				UPrimitiveComponent* RootPrimComp = Cast<UPrimitiveComponent>(RootComp);
-				RootPrimComp->AddImpulse(forceMultiplierByDist*ImpulseDirection);
+				RootPrimComp->AddImpulse(ExplosionMagnitude*forceMultiplierByDist*ImpulseDirection);
 				UE_LOG(LogTemp, Warning, TEXT("Impulse Added Successfully"));
 			}
 		}
