@@ -107,6 +107,13 @@ void AMyCharacter::MoveSideways(float Value)
 
 void AMyCharacter::PrimaryAttack()
 {
+	float Delay = 0.2f;
+	PlayAnimMontage(AttackAnim);
+	GetWorldTimerManager().SetTimer(TimerHandle_PrimaryAttack,this,&AMyCharacter::Primaryattack_TimeElapsed,Delay);
+}
+
+void AMyCharacter::Primaryattack_TimeElapsed()
+{
 	//set the projectile to spawn at muzzle
 	FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
 	FTransform SpawnTM = FTransform(GetControlRotation(),HandLocation);

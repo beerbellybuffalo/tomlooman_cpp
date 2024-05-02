@@ -8,8 +8,12 @@
 #include "MyCharacter.generated.h"
 // #include "GameFramework/SpringArmComponent.h"
 // #include "Camera/CameraComponent.h"	//bad for compilation time to include individually
+
+// Add Forward Declarations here
 class UCameraComponent;
 class USpringArmComponent;
+class UMyInteractionComponent;
+class UAnimMontage;
 
 UCLASS()
 class TOMLOOMAN_CPP_API AMyCharacter : public ACharacter
@@ -17,10 +21,6 @@ class TOMLOOMAN_CPP_API AMyCharacter : public ACharacter
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
-	AMyCharacter();
-
-protected:
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AActor>ProjectileClass;
@@ -36,24 +36,30 @@ protected:
 	USceneComponent* RootComp;
 	UPROPERTY(VisibleAnywhere)
 	UMyInteractionComponent* InteractionComp;
-		
 	UPROPERTY(EditAnywhere)
 	float JumpMultiplier;
-	
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+	UPROPERTY(EditAnywhere, Category = "Attack") // Category here is for the sake of making things easier for us in the Editor
+	UAnimMontage* AttackAnim;
+	FTimerHandle TimerHandle_PrimaryAttack;
+
 
 	void MoveForward(float Value);
 	void MoveSideways(float Value);
 	void PrimaryAttack();
+	void Primaryattack_TimeElapsed(); // this is a temporary way of adding delay to sync the animation with the projectile. proper way is to use ANIMATION NOTIFIES
 	void PrimaryInteract();
 	void Jump();
 	
-public:	
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	// Sets default values for this character's properties
+	AMyCharacter();
 
 };
