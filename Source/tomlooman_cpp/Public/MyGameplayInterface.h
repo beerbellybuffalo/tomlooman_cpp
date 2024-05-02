@@ -22,6 +22,6 @@ class TOMLOOMAN_CPP_API IMyGameplayInterface
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	UFUNCTION(BlueprintNativeEvent) //meant to be native to c++
+	UFUNCTION(BlueprintCallable,BlueprintNativeEvent) //meant to be native to c++
 	void Interact(APawn* InstigatorPawn);
 };

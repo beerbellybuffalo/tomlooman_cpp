@@ -70,7 +70,7 @@ void UMyInteractionComponent::PrimaryInteract()
 	// // Version 1.3: using a sphere trace
 	TArray<FHitResult> Hits;
 	FCollisionShape ShapeForTrace;
-	float Radius = 30.0f;
+	float Radius = 100.0f;
 	ShapeForTrace.SetSphere(Radius);
 	bool bSphereTraceHit = GetWorld()->SweepMultiByObjectType(Hits,CamLocation,End,FQuat::Identity,ObjectQueryParams,ShapeForTrace);
 
@@ -86,8 +86,8 @@ void UMyInteractionComponent::PrimaryInteract()
 				IMyGameplayInterface::Execute_Interact(HitActor,Cast<APawn>(MyOwner));
 			}
 			// // Version 1.3: using sphere
-			FColor LineColor = bSphereTraceHit? FColor::Green : FColor::Red;
-			DrawDebugSphere(GetWorld(),Hit.ImpactPoint,Radius,32,LineColor,false,2.0f,0,2.0f);
+			// FColor LineColor = bSphereTraceHit? FColor::Green : FColor::Red;
+			// DrawDebugSphere(GetWorld(),Hit.ImpactPoint,Radius,32,LineColor,false,2.0f,0,2.0f);
 		}
 	}
 
