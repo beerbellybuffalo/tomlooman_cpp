@@ -106,31 +106,31 @@ void AExplosiveBarrel::Explode()
 	// get the effect that's assigned via editor and spawn it
 	UParticleSystem* ExplosionEffect = EffectComp->Template;
 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionEffect, GetActorLocation());
+	
+	// apply explosion force to surrounding objects within a certain radius
+	ApplyExplosionForceInRadius(this->GetActorLocation(), this->GetActorLocation(), ExplosionRadius);
+	UE_LOG(LogTemp, Warning, TEXT("ApplyExplosionForceInRadius() finished execution"));
+
+	//Destroy the barrel
+	this->Destroy();
+	UE_LOG(LogTemp, Warning, TEXT("Barrel Destroyed"));
+
+	UE_LOG(LogTemp, Warning, TEXT("Explode() finished execution"));
 }
 
 //Method 1: Using Overlap to trigger barrel explosion
-void AExplosiveBarrel::OnOverlapBegin(class AActor* OverlappedActor, class AActor* OtherActor)
-{
-	UE_LOG(LogTemp, Warning, TEXT("Barrel Hit, Overlap Detected"));
-	// Check if the other actor in collision is of the class AMagicProjectile
-	if(OtherActor->IsA(AMagicProjectile::StaticClass()))
-	{
-		OtherActor->Destroy();
-		UE_LOG(LogTemp, Warning, TEXT("Projectile Destroyed"));
-		FVector ExplosionLocation = OverlappedActor->GetActorLocation();
-		//trigger explosion effect
-		Explode();
-		UE_LOG(LogTemp, Warning, TEXT("Explode() finished execution"));
-		
-		// apply explosion force to surrounding objects within a certain radius
-		ApplyExplosionForceInRadius(ExplosionLocation, ExplosionLocation, ExplosionRadius);
-		UE_LOG(LogTemp, Warning, TEXT("ApplyExplosionForceInRadius() finished execution"));
-
-		//Destroy both the barrel and the projectile
-		OverlappedActor->Destroy();
-		UE_LOG(LogTemp, Warning, TEXT("Barrel Destroyed"));
-	}
-}
+// void AExplosiveBarrel::OnOverlapBegin(class AActor* OverlappedActor, class AActor* OtherActor)
+// {
+// 	UE_LOG(LogTemp, Warning, TEXT("Barrel Hit, Overlap Detected"));
+// 	// Check if the other actor in collision is of the class AMagicProjectile
+// 	if(OtherActor->IsA(AMagicProjectile::StaticClass()))
+// 	{
+// 		OtherActor->Destroy();
+// 		UE_LOG(LogTemp, Warning, TEXT("Projectile Destroyed"));
+// 		//trigger explosion effect
+// 		Explode();
+// 	}
+// }
 
 
 //Method 2: Implement explosion using OnHit instead. For some reason, the OnHit Event was not being detected.
