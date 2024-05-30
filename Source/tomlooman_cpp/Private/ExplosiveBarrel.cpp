@@ -14,7 +14,7 @@
 AExplosiveBarrel::AExplosiveBarrel()
 {
 	// Bind the OnActorBeginOverlap event to your function
-	OnActorBeginOverlap.AddDynamic(this, &AExplosiveBarrel::OnOverlapBegin);
+	// OnActorBeginOverlap.AddDynamic(this, &AExplosiveBarrel::OnOverlapBegin);
 
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;

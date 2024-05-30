@@ -34,8 +34,8 @@ protected:
 	// void Explode(UParticleSystem* ExplosionEffect, FHitResult Hit);
 	void Explode();
 
-	UFUNCTION()
-	void OnOverlapBegin(class AActor* OverlappedActor, class AActor* OtherActor);
+	// UFUNCTION()
+	// void OnOverlapBegin(class AActor* OverlappedActor, class AActor* OtherActor);
 	
 	// UFUNCTION()
 	// void OnHit(AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, FHitResult& Hit);
