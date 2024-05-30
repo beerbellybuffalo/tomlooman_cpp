@@ -18,8 +18,8 @@ public:
 
 protected:
 
-	UPROPERTY(VisibleAnywhere)
-	UCapsuleComponent *CapsuleComp;
+	// UPROPERTY(VisibleAnywhere)
+	// UCapsuleComponent *CapsuleComp;
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent *MeshComp;
 	UPROPERTY(VisibleAnywhere)
@@ -31,7 +31,17 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	TArray<AActor*> ActorsToIgnore;
 	
+
+public:
+
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+
 	// void Explode(UParticleSystem* ExplosionEffect, FHitResult Hit);
+
+	UFUNCTION(BlueprintCallable)
 	void Explode();
 
 	// UFUNCTION()
@@ -39,13 +49,6 @@ protected:
 	
 	// UFUNCTION()
 	// void OnHit(AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, FHitResult& Hit);
-
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-public:
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 
 	void ApplyExplosionForceInRadius(FVector StartLocation, FVector EndLocation, float Radius);
 };

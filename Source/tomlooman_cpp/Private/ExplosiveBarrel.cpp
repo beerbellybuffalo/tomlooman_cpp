@@ -5,7 +5,6 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "CollisionQueryParams.h"
 #include "LandscapeStreamingProxy.h"
-#include "MagicProjectile.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
 
@@ -19,11 +18,12 @@ AExplosiveBarrel::AExplosiveBarrel()
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	CapsuleComp = CreateDefaultSubobject<UCapsuleComponent>("CapsuleComp");
-	RootComponent = CapsuleComp;
-	CapsuleComp->SetGenerateOverlapEvents(true);
+	// CapsuleComp = CreateDefaultSubobject<UCapsuleComponent>("CapsuleComp");
+	// RootComponent = CapsuleComp;
+	// CapsuleComp->SetGenerateOverlapEvents(true);
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>("MeshComp");
-	MeshComp->SetupAttachment(RootComponent);
+	MeshComp->SetSimulatePhysics(true); //need this for Explode()
+	// RootComponent = MeshComp;
 	EffectComp = CreateDefaultSubobject<UParticleSystemComponent>("EffectComp");
 	EffectComp->SetupAttachment(RootComponent);
 	ExplosionRadius = 500; //set some default value but can change in editor
@@ -90,12 +90,17 @@ void AExplosiveBarrel::ApplyExplosionForceInRadius(FVector StartLocation, FVecto
 			//this multiplier is inversely proportional to the distance from the origin of explosion
 			float forceMultiplierByDist = ExplosionRadius/(HitLocation-StartLocation).Size();
 			// Apply Impulse on HitActor towards ImpulseDirection, using forceMultiplierByDist
-			// // If the actor has a root component, apply impulse
+			// If the HitActor has a root component, apply impulse to it
 			if (RootComp)
 			{
 				UPrimitiveComponent* RootPrimComp = Cast<UPrimitiveComponent>(RootComp);
-				RootPrimComp->AddImpulse(ExplosionMagnitude*forceMultiplierByDist*ImpulseDirection);
-				UE_LOG(LogTemp, Warning, TEXT("Impulse Added Successfully"));
+				UE_LOG(LogTemp, Warning, TEXT("RootComp cast to UPrimitiveComponent Successfully"));
+				//must be a a type of UPrimitiveComponent
+				if(RootPrimComp && RootPrimComp->IsSimulatingPhysics())
+				{
+					RootPrimComp->AddImpulse(ExplosionMagnitude*forceMultiplierByDist*ImpulseDirection);
+					UE_LOG(LogTemp, Warning, TEXT("Impulse Added Successfully"));
+				}
 			}
 		}
 	}
@@ -103,9 +108,30 @@ void AExplosiveBarrel::ApplyExplosionForceInRadius(FVector StartLocation, FVecto
 
 void AExplosiveBarrel::Explode()
 {
-	// get the effect that's assigned via editor and spawn it
+
+	// Check valid world context
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Invalid World Context!"));
+		return;
+	}
+
+	//Check actor location
+	FVector ActorLocation = GetActorLocation();
+	UE_LOG(LogTemp, Error, TEXT("Spawning Emitter at Location: %s"), *ActorLocation.ToString());
+	
+	// Get the effect that's assigned via editor and spawn it
 	UParticleSystem* ExplosionEffect = EffectComp->Template;
-	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionEffect, GetActorLocation());
+	if(ExplosionEffect)
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionEffect, GetActorLocation());
+		UE_LOG(LogTemp, Error, TEXT("Particle System Spawned correctly!"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Particle System not loaded correctly!"));
+	}
 	
 	// apply explosion force to surrounding objects within a certain radius
 	ApplyExplosionForceInRadius(this->GetActorLocation(), this->GetActorLocation(), ExplosionRadius);
@@ -114,7 +140,7 @@ void AExplosiveBarrel::Explode()
 	//Destroy the barrel
 	this->Destroy();
 	UE_LOG(LogTemp, Warning, TEXT("Barrel Destroyed"));
-
+	
 	UE_LOG(LogTemp, Warning, TEXT("Explode() finished execution"));
 }
 
