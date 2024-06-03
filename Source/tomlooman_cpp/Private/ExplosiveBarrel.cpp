@@ -23,7 +23,7 @@ AExplosiveBarrel::AExplosiveBarrel()
 	// CapsuleComp->SetGenerateOverlapEvents(true);
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>("MeshComp");
 	MeshComp->SetSimulatePhysics(true); //need this for Explode()
-	// RootComponent = MeshComp;
+	RootComponent = MeshComp;
 	EffectComp = CreateDefaultSubobject<UParticleSystemComponent>("EffectComp");
 	EffectComp->SetupAttachment(RootComponent);
 	ExplosionRadius = 500; //set some default value but can change in editor

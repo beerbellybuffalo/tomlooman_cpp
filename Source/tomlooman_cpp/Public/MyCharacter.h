@@ -46,9 +46,9 @@ public:
 	void MoveForward(float Value);
 	void MoveSideways(float Value);
 	void PrimaryAttack();
-	void Primaryattack_TimeElapsed(); // this is a temporary way of adding delay to sync the animation with the projectile. proper way is to use ANIMATION NOTIFIES
+	void PrimaryAttack_TimeElapsed(); // this is a temporary way of adding delay to sync the animation with the projectile. proper way is to use ANIMATION NOTIFIES
 	void PrimaryInteract();
-	void Jump();
+	void Jump() override; //because the default ACharacter class in Unreal Engine already has an implementation for Jump(). It is marked with the "virtual" specifier.
 	
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
