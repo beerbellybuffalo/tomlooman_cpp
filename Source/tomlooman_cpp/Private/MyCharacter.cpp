@@ -7,6 +7,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "DrawDebugHelpers.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // This is entirely optional, it draws two arrows to visualize rotations of the player
 void AMyCharacter::Tick(float DeltaTime)
@@ -112,16 +113,73 @@ void AMyCharacter::PrimaryAttack()
 	GetWorldTimerManager().SetTimer(TimerHandle_PrimaryAttack,this,&AMyCharacter::PrimaryAttack_TimeElapsed,Delay);
 }
 
+FVector AMyCharacter::GetAttackImpactPoint()
+{
+	// Get the player controller
+	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+
+	// Get the viewport size
+	int32 ViewportSizeX, ViewportSizeY;
+	PlayerController->GetViewportSize(ViewportSizeX, ViewportSizeY);
+
+	// Calculate the crosshair screen position
+	FVector2D CrosshairPosition(ViewportSizeX * 0.5f, ViewportSizeY * 0.5f);
+
+	// Deproject the screen position of the crosshair to a world position and direction
+	FVector WorldLocation, WorldDirection;
+	PlayerController->DeprojectScreenPositionToWorld(CrosshairPosition.X, CrosshairPosition.Y, WorldLocation, WorldDirection);
+
+	// Calculate the end point of the line trace
+	FVector End = WorldLocation + (WorldDirection * 10000.0f);
+
+	// Define the object types to trace against
+	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
+	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldStatic));
+	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_WorldDynamic));
+	ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_Destructible));
+	// ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_Pawn)); //no enemy units yet
+	// Add more object types as needed
+	
+	// Perform the line trace
+	FHitResult HitResult;
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+
+	bool bHit = GetWorld()->LineTraceSingleByObjectType(HitResult, WorldLocation, End, FCollisionObjectQueryParams(ObjectTypes), QueryParams);
+
+	// Draw debug line
+	DrawDebugLine(GetWorld(), WorldLocation, End, FColor::Green, false, 1, 0, 1);
+
+	// Check if we hit something
+	if (bHit)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Hit: %s"), *HitResult.GetActor()->GetName());
+		DrawDebugPoint(GetWorld(), HitResult.Location, 10, FColor::Red, false, 1);
+		return HitResult.ImpactPoint;
+	}
+	//if nothing was hit
+	return HitResult.TraceEnd;
+}
+
 void AMyCharacter::PrimaryAttack_TimeElapsed()
 {
-	//set the projectile to spawn at muzzle
-	FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
-	FTransform SpawnTM = FTransform(GetControlRotation(),HandLocation);
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	SpawnParams.Instigator = this;
-	
-	GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
+	if(ensure(ProjectileClass))
+	{
+		//Step 1: set the projectile to spawn at muzzle
+		FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
+
+		//Step 2: perform line trace from camera to world to find the impact point for the projectile.
+		ImpactPoint = GetAttackImpactPoint();
+		
+		//Step 3: projectile will be set to travel from hand to impact point when spawned
+		ProjectileRot = UKismetMathLibrary::FindLookAtRotation(HandLocation, ImpactPoint);
+		FTransform SpawnTM = FTransform(ProjectileRot,HandLocation);
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		SpawnParams.Instigator = this;
+		
+		GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
+	}
 }
 
 void AMyCharacter::PrimaryInteract()

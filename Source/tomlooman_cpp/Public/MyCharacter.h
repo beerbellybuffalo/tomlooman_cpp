@@ -42,13 +42,15 @@ public:
 	UAnimMontage* AttackAnim;
 	FTimerHandle TimerHandle_PrimaryAttack;
 
-
 	void MoveForward(float Value);
 	void MoveSideways(float Value);
 	void PrimaryAttack();
 	void PrimaryAttack_TimeElapsed(); // this is a temporary way of adding delay to sync the animation with the projectile. proper way is to use ANIMATION NOTIFIES
 	void PrimaryInteract();
-	void Jump() override; //because the default ACharacter class in Unreal Engine already has an implementation for Jump(). It is marked with the "virtual" specifier.
+	void Jump() override; //because the default ACharacter class in Unreal Engine already has an implementation for Jump(). The function in ACharacter is marked with the "virtual" specifier and hence can be overriden.
+	FVector GetAttackImpactPoint();
+	FVector ImpactPoint;
+	FRotator ProjectileRot;
 	
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

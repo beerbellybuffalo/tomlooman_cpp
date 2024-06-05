@@ -6,16 +6,16 @@
 #include "Components/SphereComponent.h"
 #include "GameFramework/Actor.h"
 #include "GameFramework/ProjectileMovementComponent.h"
-#include "MagicProjectile.generated.h"
+#include "BaseProjectile.generated.h"
 
 UCLASS()
-class TOMLOOMAN_CPP_API AMagicProjectile : public AActor
+class TOMLOOMAN_CPP_API ABaseProjectile : public AActor
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this actor's properties
-	AMagicProjectile();
+	ABaseProjectile();
 
 protected:
 
