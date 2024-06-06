@@ -9,11 +9,17 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
-// This is entirely optional, it draws two arrows to visualize rotations of the player
+// Called when the game starts or when spawned
+void AMyCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+}
+
 void AMyCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+// This is entirely optional, it draws two arrows to visualize rotations of the player
 	// -- Rotation Visualization -- //
 	const float DrawScale = 100.0f;
 	const float Thickness = 5.0f;
@@ -57,20 +63,6 @@ AMyCharacter::AMyCharacter()
 	InteractionComp = CreateDefaultSubobject<UMyInteractionComponent>("InteractionComp");
 }
 
-// Called when the game starts or when spawned
-void AMyCharacter::BeginPlay()
-{
-	Super::BeginPlay();
-	
-}
-
-// // Called every frame
-// void AMyCharacter::Tick(float DeltaTime)
-// {
-// 	Super::Tick(DeltaTime);
-//
-// }
-
 // Called to bind functionality to input
 void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -79,9 +71,12 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 	PlayerInputComponent->BindAxis("MoveSideways",this,&AMyCharacter::MoveSideways);
 	PlayerInputComponent->BindAxis("Turn",this,&APawn::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("LookUp",this,&APawn::AddControllerPitchInput);
-	PlayerInputComponent->BindAction("PrimaryAttack", IE_Pressed, this, &AMyCharacter::PrimaryAttack);
+	PlayerInputComponent->BindAction("PrimaryAttack", IE_Pressed, this, &AMyCharacter::SetAndFirePrimaryProjectile);
+	PlayerInputComponent->BindAction("Blackhole", IE_Pressed, this, &AMyCharacter::SetAndFireBlackholeProjectile);
+	PlayerInputComponent->BindAction("Teleport", IE_Pressed, this, &AMyCharacter::SetAndFireTeleportProjectile);
 	PlayerInputComponent->BindAction("PrimaryInteract", IE_Pressed, this, &AMyCharacter::PrimaryInteract);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AMyCharacter::Jump);
+	// PlayerInputComponent->BindAction("Blackhole", IE_Pressed, this, &AMyCharacter::Blackhole);
 }
 
 void AMyCharacter::MoveForward(float Value)
@@ -106,11 +101,11 @@ void AMyCharacter::MoveSideways(float Value)
 	AddMovementInput(RightVector,Value);
 }
 
-void AMyCharacter::PrimaryAttack()
+void AMyCharacter::Attack()
 {
 	float Delay = 0.2f;
 	PlayAnimMontage(AttackAnim);
-	GetWorldTimerManager().SetTimer(TimerHandle_PrimaryAttack,this,&AMyCharacter::PrimaryAttack_TimeElapsed,Delay);
+	GetWorldTimerManager().SetTimer(TimerHandle_Attack,this,&AMyCharacter::Attack_TimeElapsed,Delay);
 }
 
 FVector AMyCharacter::GetAttackImpactPoint()
@@ -161,9 +156,27 @@ FVector AMyCharacter::GetAttackImpactPoint()
 	return HitResult.TraceEnd;
 }
 
-void AMyCharacter::PrimaryAttack_TimeElapsed()
+void AMyCharacter::SetAndFirePrimaryProjectile()
 {
-	if(ensure(ProjectileClass))
+	ActiveProjectile = PrimaryProjectile;
+	Attack();
+}
+
+void AMyCharacter::SetAndFireBlackholeProjectile()
+{
+	ActiveProjectile = BlackholeProjectile;
+	Attack();
+}
+
+void AMyCharacter::SetAndFireTeleportProjectile()
+{
+	ActiveProjectile = TeleportProjectile;
+	Attack();
+}
+
+void AMyCharacter::Attack_TimeElapsed()
+{
+	if(ensureAlways(ActiveProjectile))
 	{
 		//Step 1: set the projectile to spawn at muzzle
 		FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
@@ -177,8 +190,7 @@ void AMyCharacter::PrimaryAttack_TimeElapsed()
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 		SpawnParams.Instigator = this;
-		
-		GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
+		GetWorld()->SpawnActor<AActor>(ActiveProjectile, SpawnTM, SpawnParams);
 	}
 }
 
@@ -192,7 +204,6 @@ void AMyCharacter::Jump()
 	if(!MyCharacterMovement->IsFalling())
 	{
 		LaunchCharacter(GetActorUpVector()*JumpMultiplier,false,false);
-
 		// MyCharacterMovement->AddImpulse(GetActorUpVector()*1000);
 	}
 }

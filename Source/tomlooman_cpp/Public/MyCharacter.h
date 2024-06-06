@@ -22,8 +22,15 @@ class TOMLOOMAN_CPP_API AMyCharacter : public ACharacter
 
 public:
 
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<AActor>ProjectileClass;
+	UPROPERTY(EditAnywhere, Category = "Projectiles")
+	TSubclassOf<AActor>PrimaryProjectile;
+	UPROPERTY(EditAnywhere, Category = "Projectiles")
+	TSubclassOf<AActor>BlackholeProjectile;
+	UPROPERTY(EditAnywhere, Category = "Projectiles")
+	TSubclassOf<AActor>TeleportProjectile;
+	UPROPERTY(VisibleAnywhere, Category = "Projectiles")
+	TSubclassOf<AActor>ActiveProjectile;
+
 	UPROPERTY(VisibleAnywhere)
 	USpringArmComponent* SpringArmComp;
 	UPROPERTY(VisibleAnywhere)
@@ -40,17 +47,20 @@ public:
 	float JumpMultiplier;
 	UPROPERTY(EditAnywhere, Category = "Attack") // Category here is for the sake of making things easier for us in the Editor
 	UAnimMontage* AttackAnim;
-	FTimerHandle TimerHandle_PrimaryAttack;
+	FTimerHandle TimerHandle_Attack;
 
 	void MoveForward(float Value);
 	void MoveSideways(float Value);
-	void PrimaryAttack();
-	void PrimaryAttack_TimeElapsed(); // this is a temporary way of adding delay to sync the animation with the projectile. proper way is to use ANIMATION NOTIFIES
+	void Attack();
+	void Attack_TimeElapsed(); // this is a temporary way of adding delay to sync the animation with the projectile. proper way is to use ANIMATION NOTIFIES
 	void PrimaryInteract();
 	void Jump() override; //because the default ACharacter class in Unreal Engine already has an implementation for Jump(). The function in ACharacter is marked with the "virtual" specifier and hence can be overriden.
 	FVector GetAttackImpactPoint();
 	FVector ImpactPoint;
 	FRotator ProjectileRot;
+	void SetAndFirePrimaryProjectile();
+	void SetAndFireBlackholeProjectile();
+	void SetAndFireTeleportProjectile();
 	
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -63,5 +73,4 @@ public:
 
 	// Sets default values for this character's properties
 	AMyCharacter();
-
 };
