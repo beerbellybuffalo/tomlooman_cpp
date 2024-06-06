@@ -28,10 +28,19 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UParticleSystemComponent *EffectComp; // for visual effects to be seen in the world
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float MaxDistanceTillDetonate;
+
+	FVector SpawnLocation;
+	
+	
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	UFUNCTION(BlueprintCallable)
+	virtual void Detonate();
 };
